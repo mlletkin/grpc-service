@@ -43,8 +43,8 @@ func Test_GetPost(t *testing.T) {
 		require.Equal(t, http.StatusOK, code)
 		assert.Equal(
 			t,
-			"{\"id\":1,\"heading\":\"test\",\"text\":\"\",\"likes_count\":0,\"comments\":[{\"id\":1,\"text\":\"Test\",\"likes_count\":0}]}",
-			string(res),
+			fixtures.Post().Valid().P(),
+			res,
 		)
 	})
 
@@ -75,7 +75,7 @@ func Test_GetPost(t *testing.T) {
 
 			res, code := s.GetPost(ctx, int64(id))
 			require.Equal(t, http.StatusInternalServerError, code)
-			assert.Equal(t, []byte(nil), res)
+			assert.Equal(t, nil, res)
 		})
 	})
 }
@@ -102,8 +102,8 @@ func Test_AddPost(t *testing.T) {
 		require.Equal(t, http.StatusOK, status)
 		assert.Equal(
 			t,
-			"{\"id\":1,\"heading\":\"heading\",\"text\":\"text\",\"likes_count\":0,\"comments\":null}",
-			string(data),
+			post,
+			data,
 		)
 	})
 	t.Run("failure", func(t *testing.T) {
@@ -116,7 +116,7 @@ func Test_AddPost(t *testing.T) {
 		defer ctrl.Finish()
 		data, status := s.AddPost(ctx, &server.AddPostRequest{Heading: "heading", Text: "text"})
 		require.Equal(t, http.StatusInternalServerError, status)
-		assert.Equal(t, "", string(data))
+		assert.Equal(t, nil, data)
 	})
 }
 
@@ -238,7 +238,7 @@ func Test_AddComment(t *testing.T) {
 		defer ctrl.Finish()
 		data, status := s.AddComment(ctx, comment)
 		require.Equal(t, http.StatusOK, status)
-		assert.Equal(t, "{\"id\":1,\"text\":\"test\",\"likes_count\":0}", string(data))
+		assert.Equal(t, comment, data)
 	})
 	t.Run("failure", func(t *testing.T) {
 		t.Parallel()
@@ -251,7 +251,7 @@ func Test_AddComment(t *testing.T) {
 		defer ctrl.Finish()
 		data, status := s.AddComment(ctx, comment)
 		require.Equal(t, http.StatusInternalServerError, status)
-		assert.Equal(t, "", string(data))
+		assert.Equal(t, nil, data)
 	})
 }
 

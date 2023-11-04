@@ -14,8 +14,16 @@ import (
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/repository/postgresql"
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/server"
 	pb "gitlab.ozon.dev/kavkazov/homework-8/pkg/hw_service"
+	"gitlab.ozon.dev/kavkazov/homework-8/pkg/logger"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
+
+var brokers = []string{
+	"127.0.0.1:9091",
+	"127.0.0.1:9092",
+	"127.0.0.1:9093",
+}
 
 func main() {
 	ctx, done := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -47,18 +55,27 @@ func main() {
 }
 
 func run(ctx context.Context, addr string) error {
+
+	zapLogger, err := zap.NewProduction()
+	if err != nil {
+		return err
+	}
+	logger.SetGlobal(
+		zapLogger.With(zap.String("component", "homework_service")),
+	)
+
 	srv := grpc.NewServer()
 
 	database, err := db.NewDB(ctx)
 	if err != nil {
 		return err
 	}
+	defer database.GetPool(ctx).Close()
 
 	impl := server.NewServer(
 		postgresql.NewPosts(database),
 		postgresql.NewComments(database),
 	)
-	defer database.GetPool(ctx).Close()
 
 	pb.RegisterHomeworkServiceServer(srv, hwservice.New(impl))
 
@@ -67,6 +84,7 @@ func run(ctx context.Context, addr string) error {
 		return err
 	}
 
-	log.Printf("homework service listening on %q", addr)
+	logger.Infof(ctx, "homework service listening on %q", addr)
+
 	return srv.Serve(lis)
 }

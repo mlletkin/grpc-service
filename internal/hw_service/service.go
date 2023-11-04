@@ -4,10 +4,13 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"time"
 
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/repository"
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/server"
 	pb "gitlab.ozon.dev/kavkazov/homework-8/pkg/hw_service"
+	"gitlab.ozon.dev/kavkazov/homework-8/pkg/logger"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -27,6 +30,11 @@ func New(server *server.Server) *Implementation {
 }
 
 func (i *Implementation) AddComment(ctx context.Context, comment *pb.CommentRequestWithEntity) (*pb.CommentResponseWithEntity, error) {
+
+	l := logger.FromContext(ctx)
+	ctx = logger.ToContext(ctx, l.With(zap.String("method", "AddComment")))
+	logger.Infof(ctx, "%v", time.Now())
+
 	entity := comment.GetEntity()
 	post_id := comment.GetPostId()
 	data, status := i.server.AddComment(ctx, &repository.Comment{
@@ -49,6 +57,11 @@ func (i *Implementation) AddComment(ctx context.Context, comment *pb.CommentRequ
 }
 
 func (i *Implementation) AddPost(ctx context.Context, post *pb.PostRequestWithEntity) (*pb.PostResponseWithEntity, error) {
+
+	l := logger.FromContext(ctx)
+	ctx = logger.ToContext(ctx, l.With(zap.String("method", "AddPost")))
+	logger.Infof(ctx, "%v", time.Now())
+
 	data, status := i.server.AddPost(ctx, &server.AddPostRequest{
 		Heading: post.GetEntity().GetHeading(),
 		Text:    post.GetEntity().GetText(),
@@ -77,6 +90,11 @@ func (i *Implementation) AddPost(ctx context.Context, post *pb.PostRequestWithEn
 }
 
 func (i *Implementation) GetPost(ctx context.Context, id *pb.PostRequestWithId) (*pb.PostResponseWithEntity, error) {
+
+	l := logger.FromContext(ctx)
+	ctx = logger.ToContext(ctx, l.With(zap.String("method", "GetPost")))
+	logger.Infof(ctx, "%v", time.Now())
+
 	data, status := i.server.GetPost(ctx, int64(id.GetId()))
 	if status != http.StatusOK {
 		return nil, ErrServer
@@ -103,6 +121,11 @@ func (i *Implementation) GetPost(ctx context.Context, id *pb.PostRequestWithId) 
 }
 
 func (i *Implementation) RemoveComment(ctx context.Context, id *pb.CommentRequestWithId) (*emptypb.Empty, error) {
+
+	l := logger.FromContext(ctx)
+	ctx = logger.ToContext(ctx, l.With(zap.String("method", "RemoveComment")))
+	logger.Infof(ctx, "%v", time.Now())
+
 	status := i.server.RemoveComment(ctx, int64(id.GetId()))
 	if status != http.StatusOK {
 		return nil, ErrServer
@@ -111,6 +134,11 @@ func (i *Implementation) RemoveComment(ctx context.Context, id *pb.CommentReques
 }
 
 func (i *Implementation) RemovePost(ctx context.Context, id *pb.PostRequestWithId) (*emptypb.Empty, error) {
+
+	l := logger.FromContext(ctx)
+	ctx = logger.ToContext(ctx, l.With(zap.String("method", "RemovePost")))
+	logger.Infof(ctx, "%v", time.Now())
+
 	status := i.server.RemovePost(ctx, int64(id.GetId()))
 	if status != http.StatusOK {
 		return nil, ErrServer
@@ -119,6 +147,11 @@ func (i *Implementation) RemovePost(ctx context.Context, id *pb.PostRequestWithI
 }
 
 func (i *Implementation) UpdatePost(ctx context.Context, post *pb.PostRequestWithEntity) (*emptypb.Empty, error) {
+
+	l := logger.FromContext(ctx)
+	ctx = logger.ToContext(ctx, l.With(zap.String("method", "UpdatePost")))
+	logger.Infof(ctx, "%v", time.Now())
+
 	entity := post.GetEntity()
 	status := i.server.UpdatePost(ctx, &server.UpdatePostRequest{
 		ID: int64(entity.GetId()),
