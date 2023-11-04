@@ -35,12 +35,21 @@ func request_HomeworkService_GetPost_0(ctx context.Context, marshaler runtime.Ma
 	var protoReq PostRequestWithId
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
 	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+
+	protoReq.Id, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 
 	msg, err := client.GetPost(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -52,12 +61,21 @@ func local_request_HomeworkService_GetPost_0(ctx context.Context, marshaler runt
 	var protoReq PostRequestWithId
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
 	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+
+	protoReq.Id, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 
 	msg, err := server.GetPost(ctx, &protoReq)
@@ -137,12 +155,21 @@ func request_HomeworkService_RemovePost_0(ctx context.Context, marshaler runtime
 	var protoReq PostRequestWithId
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
 	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+
+	protoReq.Id, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 
 	msg, err := client.RemovePost(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -154,12 +181,21 @@ func local_request_HomeworkService_RemovePost_0(ctx context.Context, marshaler r
 	var protoReq PostRequestWithId
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
 	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+
+	protoReq.Id, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 
 	msg, err := server.RemovePost(ctx, &protoReq)
@@ -179,6 +215,23 @@ func request_HomeworkService_AddComment_0(ctx context.Context, marshaler runtime
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["post_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "post_id")
+	}
+
+	protoReq.PostId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "post_id", err)
+	}
+
 	msg, err := client.AddComment(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -196,6 +249,23 @@ func local_request_HomeworkService_AddComment_0(ctx context.Context, marshaler r
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["post_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "post_id")
+	}
+
+	protoReq.PostId, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "post_id", err)
+	}
+
 	msg, err := server.AddComment(ctx, &protoReq)
 	return msg, metadata, err
 
@@ -205,12 +275,21 @@ func request_HomeworkService_RemoveComment_0(ctx context.Context, marshaler runt
 	var protoReq CommentRequestWithId
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
 	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+
+	protoReq.Id, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 
 	msg, err := client.RemoveComment(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -222,12 +301,21 @@ func local_request_HomeworkService_RemoveComment_0(ctx context.Context, marshale
 	var protoReq CommentRequestWithId
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
 	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+
+	protoReq.Id, err = runtime.Uint64(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 
 	msg, err := server.RemoveComment(ctx, &protoReq)
@@ -241,7 +329,7 @@ func local_request_HomeworkService_RemoveComment_0(ctx context.Context, marshale
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterHomeworkServiceHandlerFromEndpoint instead.
 func RegisterHomeworkServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server HomeworkServiceServer) error {
 
-	mux.Handle("POST", pattern_HomeworkService_GetPost_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_HomeworkService_GetPost_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -249,7 +337,7 @@ func RegisterHomeworkServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/homework_service.HomeworkService/GetPost", runtime.WithHTTPPathPattern("/getPost"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/homework_service.HomeworkService/GetPost", runtime.WithHTTPPathPattern("/post/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -274,7 +362,7 @@ func RegisterHomeworkServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/homework_service.HomeworkService/AddPost", runtime.WithHTTPPathPattern("/addPost"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/homework_service.HomeworkService/AddPost", runtime.WithHTTPPathPattern("/post"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -291,7 +379,7 @@ func RegisterHomeworkServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("POST", pattern_HomeworkService_UpdatePost_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_HomeworkService_UpdatePost_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -299,7 +387,7 @@ func RegisterHomeworkServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/homework_service.HomeworkService/UpdatePost", runtime.WithHTTPPathPattern("/updatePost"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/homework_service.HomeworkService/UpdatePost", runtime.WithHTTPPathPattern("/post"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -316,7 +404,7 @@ func RegisterHomeworkServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("POST", pattern_HomeworkService_RemovePost_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("DELETE", pattern_HomeworkService_RemovePost_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -324,7 +412,7 @@ func RegisterHomeworkServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/homework_service.HomeworkService/RemovePost", runtime.WithHTTPPathPattern("/removePost"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/homework_service.HomeworkService/RemovePost", runtime.WithHTTPPathPattern("/post/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -349,7 +437,7 @@ func RegisterHomeworkServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/homework_service.HomeworkService/AddComment", runtime.WithHTTPPathPattern("/addComment"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/homework_service.HomeworkService/AddComment", runtime.WithHTTPPathPattern("/comment/{post_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -366,7 +454,7 @@ func RegisterHomeworkServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("POST", pattern_HomeworkService_RemoveComment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("DELETE", pattern_HomeworkService_RemoveComment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -374,7 +462,7 @@ func RegisterHomeworkServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/homework_service.HomeworkService/RemoveComment", runtime.WithHTTPPathPattern("/removeComment"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/homework_service.HomeworkService/RemoveComment", runtime.WithHTTPPathPattern("/comment/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -432,13 +520,13 @@ func RegisterHomeworkServiceHandler(ctx context.Context, mux *runtime.ServeMux, 
 // "HomeworkServiceClient" to call the correct interceptors.
 func RegisterHomeworkServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client HomeworkServiceClient) error {
 
-	mux.Handle("POST", pattern_HomeworkService_GetPost_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_HomeworkService_GetPost_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/homework_service.HomeworkService/GetPost", runtime.WithHTTPPathPattern("/getPost"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/homework_service.HomeworkService/GetPost", runtime.WithHTTPPathPattern("/post/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -460,7 +548,7 @@ func RegisterHomeworkServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/homework_service.HomeworkService/AddPost", runtime.WithHTTPPathPattern("/addPost"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/homework_service.HomeworkService/AddPost", runtime.WithHTTPPathPattern("/post"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -476,13 +564,13 @@ func RegisterHomeworkServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("POST", pattern_HomeworkService_UpdatePost_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_HomeworkService_UpdatePost_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/homework_service.HomeworkService/UpdatePost", runtime.WithHTTPPathPattern("/updatePost"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/homework_service.HomeworkService/UpdatePost", runtime.WithHTTPPathPattern("/post"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -498,13 +586,13 @@ func RegisterHomeworkServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("POST", pattern_HomeworkService_RemovePost_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("DELETE", pattern_HomeworkService_RemovePost_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/homework_service.HomeworkService/RemovePost", runtime.WithHTTPPathPattern("/removePost"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/homework_service.HomeworkService/RemovePost", runtime.WithHTTPPathPattern("/post/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -526,7 +614,7 @@ func RegisterHomeworkServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/homework_service.HomeworkService/AddComment", runtime.WithHTTPPathPattern("/addComment"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/homework_service.HomeworkService/AddComment", runtime.WithHTTPPathPattern("/comment/{post_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -542,13 +630,13 @@ func RegisterHomeworkServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("POST", pattern_HomeworkService_RemoveComment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("DELETE", pattern_HomeworkService_RemoveComment_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/homework_service.HomeworkService/RemoveComment", runtime.WithHTTPPathPattern("/removeComment"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/homework_service.HomeworkService/RemoveComment", runtime.WithHTTPPathPattern("/comment/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -568,17 +656,17 @@ func RegisterHomeworkServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 }
 
 var (
-	pattern_HomeworkService_GetPost_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"getPost"}, ""))
+	pattern_HomeworkService_GetPost_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1}, []string{"post", "id"}, ""))
 
-	pattern_HomeworkService_AddPost_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"addPost"}, ""))
+	pattern_HomeworkService_AddPost_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"post"}, ""))
 
-	pattern_HomeworkService_UpdatePost_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"updatePost"}, ""))
+	pattern_HomeworkService_UpdatePost_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"post"}, ""))
 
-	pattern_HomeworkService_RemovePost_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"removePost"}, ""))
+	pattern_HomeworkService_RemovePost_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1}, []string{"post", "id"}, ""))
 
-	pattern_HomeworkService_AddComment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"addComment"}, ""))
+	pattern_HomeworkService_AddComment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1}, []string{"comment", "post_id"}, ""))
 
-	pattern_HomeworkService_RemoveComment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"removeComment"}, ""))
+	pattern_HomeworkService_RemoveComment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1}, []string{"comment", "id"}, ""))
 )
 
 var (

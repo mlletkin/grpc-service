@@ -16,7 +16,39 @@
     "application/json"
   ],
   "paths": {
-    "/addComment": {
+    "/comment/{id}": {
+      "delete": {
+        "operationId": "HomeworkService_RemoveComment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "HomeworkService"
+        ]
+      }
+    },
+    "/comment/{postId}": {
       "post": {
         "operationId": "HomeworkService_AddComment",
         "responses": {
@@ -35,11 +67,23 @@
         },
         "parameters": [
           {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/homework_serviceCommentRequestWithEntity"
+              "type": "object",
+              "properties": {
+                "entity": {
+                  "$ref": "#/definitions/homework_serviceComment"
+                }
+              }
             }
           }
         ],
@@ -48,7 +92,7 @@
         ]
       }
     },
-    "/addPost": {
+    "/post": {
       "post": {
         "operationId": "HomeworkService_AddPost",
         "responses": {
@@ -78,108 +122,8 @@
         "tags": [
           "HomeworkService"
         ]
-      }
-    },
-    "/getPost": {
-      "post": {
-        "operationId": "HomeworkService_GetPost",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/homework_servicePostResponseWithEntity"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/homework_servicePostRequestWithId"
-            }
-          }
-        ],
-        "tags": [
-          "HomeworkService"
-        ]
-      }
-    },
-    "/removeComment": {
-      "post": {
-        "operationId": "HomeworkService_RemoveComment",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "type": "object",
-              "properties": {}
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/homework_serviceCommentRequestWithId"
-            }
-          }
-        ],
-        "tags": [
-          "HomeworkService"
-        ]
-      }
-    },
-    "/removePost": {
-      "post": {
-        "operationId": "HomeworkService_RemovePost",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "type": "object",
-              "properties": {}
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/homework_servicePostRequestWithId"
-            }
-          }
-        ],
-        "tags": [
-          "HomeworkService"
-        ]
-      }
-    },
-    "/updatePost": {
-      "post": {
+      },
+      "put": {
         "operationId": "HomeworkService_UpdatePost",
         "responses": {
           "200": {
@@ -210,6 +154,67 @@
           "HomeworkService"
         ]
       }
+    },
+    "/post/{id}": {
+      "get": {
+        "operationId": "HomeworkService_GetPost",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/homework_servicePostResponseWithEntity"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "HomeworkService"
+        ]
+      },
+      "delete": {
+        "operationId": "HomeworkService_RemovePost",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "HomeworkService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -224,27 +229,6 @@
           "type": "string"
         },
         "likesCount": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "homework_serviceCommentRequestWithEntity": {
-      "type": "object",
-      "properties": {
-        "postId": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "entity": {
-          "$ref": "#/definitions/homework_serviceComment"
-        }
-      }
-    },
-    "homework_serviceCommentRequestWithId": {
-      "type": "object",
-      "properties": {
-        "id": {
           "type": "string",
           "format": "uint64"
         }
@@ -293,15 +277,6 @@
         }
       },
       "title": "[Request messages] ---"
-    },
-    "homework_servicePostRequestWithId": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
     },
     "homework_servicePostResponseWithEntity": {
       "type": "object",

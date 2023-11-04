@@ -10,39 +10,36 @@ package homework_service;
 service HomeworkService { 
     rpc GetPost(PostRequestWithId) returns (PostResponseWithEntity) {
         option (google.api.http) = {
-            post: "/getPost"
-            body: "*"
+            get: "/post/{id}"
         };
     }
     rpc AddPost(PostRequestWithEntity) returns (PostResponseWithEntity) {
         option (google.api.http) = {
-            post: "/addPost"
+            post: "/post"
             body: "*"
         };
     }
     rpc UpdatePost(PostRequestWithEntity) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            post: "/updatePost"
+            put: "/post"
             body: "*"
         };
     }
     rpc RemovePost(PostRequestWithId) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            post: "/removePost"
-            body: "*"
+            delete: "/post/{id}"
         };
     }
 
     rpc AddComment(CommentRequestWithEntity) returns (CommentResponseWithEntity) {
         option (google.api.http) = {
-            post: "/addComment"
+            post: "/comment/{post_id}"
             body: "*"
         };
     }
     rpc RemoveComment(CommentRequestWithId) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            post: "/removeComment"
-            body: "*"
+            delete: "/comment/{id}"
         };
     }
 }
