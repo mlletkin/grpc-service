@@ -8,7 +8,10 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"time"
 
+	"github.com/opentracing/opentracing-go"
+	"github.com/uber/jaeger-client-go/config"
 	hwservice "gitlab.ozon.dev/kavkazov/homework-8/internal/hw_service"
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/db"
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/repository/postgresql"
@@ -63,6 +66,25 @@ func run(ctx context.Context, addr string) error {
 	logger.SetGlobal(
 		zapLogger.With(zap.String("component", "homework_service")),
 	)
+
+	jaegerCfg := config.Configuration{
+		Sampler: &config.SamplerConfig{
+			Type:  "const",
+			Param: 1,
+		},
+		Reporter: &config.ReporterConfig{
+			LogSpans:            false,
+			BufferFlushInterval: 1 * time.Second,
+		},
+	}
+	tracer, closer, err := jaegerCfg.New(
+		"homework_service",
+	)
+	if err != nil {
+		return fmt.Errorf("cannot create tracer: %v", err)
+	}
+	defer closer.Close()
+	opentracing.SetGlobalTracer(tracer)
 
 	srv := grpc.NewServer()
 
