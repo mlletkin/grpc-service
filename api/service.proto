@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option go_package = "pkg/hw_service";
+
+package homework_service;
+
+service HomeworkService { 
+    rpc GetPost(PostRequestWithId) returns (PostResponseWithEntity) {}
+    rpc AddPost(PostRequestWithEntity) returns (PostResponseWithEntity) {}
+    rpc UpdatePost(PostRequestWithEntity) returns (google.protobuf.Empty) {}
+    rpc RemovePost(PostRequestWithId) returns (google.protobuf.Empty) {}
+
+    rpc AddComment(CommentRequestWithEntity) returns (CommentResponseWithEntity) {}
+    rpc RemoveComment(CommentRequestWithId) returns (google.protobuf.Empty) {}
+}
+
+// [Request messages] ---
+message PostRequestWithEntity {
+    Post entity = 1;
+}
+
+message PostRequestWithId {
+    uint64 id = 1;
+}
+
+message CommentRequestWithEntity {
+    uint64 post_id = 1;
+    Comment entity = 2;
+}
+
+message CommentRequestWithId {
+    uint64 id = 1;
+}
+// ---
+
+// [Response messages] ---
+message PostResponseWithEntity {
+    Post entity = 1;
+}
+
+message CommentResponseWithEntity {
+    Comment entity = 1;
+}
+// ---
+
+
+// [Entities] ---
+message Post {
+    uint64 id = 1;
+    string heading = 2;
+    string text = 3;
+    uint64 likes_count = 4;
+    repeated Comment comments = 5;
+}
+
+message Comment {
+    uint64 id = 1;
+    string text = 3;
+    uint64 likes_count = 4;
+}
+// ---

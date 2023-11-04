@@ -35,19 +35,7 @@ func NewServer(post repository.PostsRepo, comment repository.CommentsRepo) *Serv
 	return &Server{postRepo: post, commentRepo: comment}
 }
 
-func (s *Server) ParsePostBody(req *http.Request) (*AddPostRequest, int) {
-	body, err := io.ReadAll(req.Body)
-	if err != nil {
-		return nil, http.StatusInternalServerError
-	}
-	var postReq AddPostRequest
-	if err = json.Unmarshal(body, &postReq); err != nil {
-		return nil, http.StatusBadRequest
-	}
-	return &postReq, http.StatusOK
-}
-
-func (s *Server) AddPost(ctx context.Context, postReq *AddPostRequest) ([]byte, int) {
+func (s *Server) AddPost(ctx context.Context, postReq *AddPostRequest) (*repository.Post, int) {
 	post := &repository.Post{
 		Heading: postReq.Heading,
 		Text:    postReq.Text,
@@ -63,26 +51,10 @@ func (s *Server) AddPost(ctx context.Context, postReq *AddPostRequest) ([]byte, 
 		}
 	}
 	post.ID = id
-	postJson, err := json.Marshal(post)
-	if err != nil {
-		return nil, http.StatusInternalServerError
-	}
-	return postJson, http.StatusOK
+	return post, http.StatusOK
 }
 
-func (s *Server) ParseGetID(req *http.Request) (int64, int) {
-	key := req.URL.Query().Get(PostIDKey)
-	if key == "" {
-		return 0, http.StatusBadRequest
-	}
-	postID, err := strconv.ParseInt(key, 10, 64)
-	if err != nil {
-		return 0, http.StatusBadRequest
-	}
-	return postID, http.StatusOK
-}
-
-func (s *Server) GetPost(ctx context.Context, postID int64) ([]byte, int) {
+func (s *Server) GetPost(ctx context.Context, postID int64) (*repository.Post, int) {
 	post, err := s.postRepo.GetByID(ctx, postID)
 	if err != nil {
 		if errors.Is(err, repository.ErrZeroRows) {
@@ -98,23 +70,7 @@ func (s *Server) GetPost(ctx context.Context, postID int64) ([]byte, int) {
 	}
 	post.Comments = comments
 
-	postJson, err := json.Marshal(post)
-	if err != nil {
-		return nil, http.StatusInternalServerError
-	}
-	return postJson, http.StatusOK
-}
-
-func (s *Server) ParsePostBodyUpdate(req *http.Request) (*UpdatePostRequest, int) {
-	body, err := io.ReadAll(req.Body)
-	if err != nil {
-		return nil, http.StatusInternalServerError
-	}
-	var postReq *UpdatePostRequest
-	if err = json.Unmarshal(body, postReq); err != nil {
-		return nil, http.StatusBadRequest
-	}
-	return postReq, http.StatusOK
+	return post, http.StatusOK
 }
 
 func (s *Server) UpdatePost(ctx context.Context, postReq *UpdatePostRequest) int {
@@ -133,18 +89,6 @@ func (s *Server) UpdatePost(ctx context.Context, postReq *UpdatePostRequest) int
 	return http.StatusOK
 }
 
-func (s *Server) ParsePathID(req *http.Request) (int64, int) {
-	key, ok := mux.Vars(req)[PostIDKey]
-	if !ok {
-		return int64(0), http.StatusBadRequest
-	}
-	postID, err := strconv.ParseInt(key, 10, 64)
-	if err != nil {
-		return int64(0), http.StatusBadRequest
-	}
-	return postID, http.StatusOK
-}
-
 func (s *Server) RemovePost(ctx context.Context, postID int64) int {
 	err := s.postRepo.Remove(ctx, postID)
 	if err != nil {
@@ -156,6 +100,75 @@ func (s *Server) RemovePost(ctx context.Context, postID int64) int {
 		}
 	}
 	return http.StatusOK
+}
+
+func (s *Server) AddComment(ctx context.Context, comment *repository.Comment) (*repository.Comment, int) {
+	id, err := s.commentRepo.Add(ctx, comment)
+	if err != nil {
+		return nil, http.StatusInternalServerError
+	}
+	comment.ID = id
+	return comment, http.StatusOK
+}
+
+func (s *Server) RemoveComment(ctx context.Context, commentID int64) int {
+	err := s.commentRepo.Remove(ctx, commentID)
+	if err != nil {
+		if errors.Is(err, repository.ErrZeroRows) {
+			return http.StatusNotFound
+		} else {
+			return http.StatusInternalServerError
+		}
+	}
+	return http.StatusOK
+}
+
+func (s *Server) ParsePostBody(req *http.Request) (*AddPostRequest, int) {
+	body, err := io.ReadAll(req.Body)
+	if err != nil {
+		return nil, http.StatusInternalServerError
+	}
+	var postReq AddPostRequest
+	if err = json.Unmarshal(body, &postReq); err != nil {
+		return nil, http.StatusBadRequest
+	}
+	return &postReq, http.StatusOK
+}
+
+func (s *Server) ParseGetID(req *http.Request) (int64, int) {
+	key := req.URL.Query().Get(PostIDKey)
+	if key == "" {
+		return 0, http.StatusBadRequest
+	}
+	postID, err := strconv.ParseInt(key, 10, 64)
+	if err != nil {
+		return 0, http.StatusBadRequest
+	}
+	return postID, http.StatusOK
+}
+
+func (s *Server) ParsePostBodyUpdate(req *http.Request) (*UpdatePostRequest, int) {
+	body, err := io.ReadAll(req.Body)
+	if err != nil {
+		return nil, http.StatusInternalServerError
+	}
+	var postReq *UpdatePostRequest
+	if err = json.Unmarshal(body, postReq); err != nil {
+		return nil, http.StatusBadRequest
+	}
+	return postReq, http.StatusOK
+}
+
+func (s *Server) ParsePathID(req *http.Request) (int64, int) {
+	key, ok := mux.Vars(req)[PostIDKey]
+	if !ok {
+		return int64(0), http.StatusBadRequest
+	}
+	postID, err := strconv.ParseInt(key, 10, 64)
+	if err != nil {
+		return int64(0), http.StatusBadRequest
+	}
+	return postID, http.StatusOK
 }
 
 func (s *Server) ParseCommentReq(req *http.Request) (*repository.Comment, int) {
@@ -183,19 +196,6 @@ func (s *Server) ParseCommentReq(req *http.Request) (*repository.Comment, int) {
 	return comment, http.StatusOK
 }
 
-func (s *Server) AddComment(ctx context.Context, comment *repository.Comment) ([]byte, int) {
-	id, err := s.commentRepo.Add(ctx, comment)
-	if err != nil {
-		return nil, http.StatusInternalServerError
-	}
-	comment.ID = id
-	commentJson, err := json.Marshal(comment)
-	if err != nil {
-		return nil, http.StatusInternalServerError
-	}
-	return commentJson, http.StatusOK
-}
-
 func (s *Server) ParseCommentID(req *http.Request) (int64, int) {
 	key := req.URL.Query().Get(CommentIDKey)
 	if key == "" {
@@ -206,16 +206,4 @@ func (s *Server) ParseCommentID(req *http.Request) (int64, int) {
 		return 0, http.StatusBadRequest
 	}
 	return commentID, http.StatusOK
-}
-
-func (s *Server) RemoveComment(ctx context.Context, commentID int64) int {
-	err := s.commentRepo.Remove(ctx, commentID)
-	if err != nil {
-		if errors.Is(err, repository.ErrZeroRows) {
-			return http.StatusNotFound
-		} else {
-			return http.StatusInternalServerError
-		}
-	}
-	return http.StatusOK
 }

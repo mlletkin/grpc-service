@@ -1,6 +1,7 @@
 package router
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -25,21 +26,38 @@ func initPostRouter(router *mux.Router, svr *server.Server) {
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
+
 			id, status := svr.ParseGetID(r)
 			if status != http.StatusOK {
 				w.WriteHeader(status)
 			}
 			data, status := svr.GetPost(r.Context(), id)
+			dataJson, err := json.Marshal(data)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
 			w.WriteHeader(status)
-			w.Write(data)
+			w.Write(dataJson)
+
 		case http.MethodPost:
+
 			post, status := svr.ParsePostBody(r)
 			if status != http.StatusOK {
 				w.WriteHeader(status)
 			}
 			data, status := svr.AddPost(r.Context(), post)
+
+			dataJson, err := json.Marshal(data)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
 			w.WriteHeader(status)
-			w.Write(data)
+			w.Write(dataJson)
+
 		case http.MethodPut:
 			post, status := svr.ParsePostBodyUpdate(r)
 			if status != http.StatusOK {
@@ -83,8 +101,15 @@ func initCommentRouter(router *mux.Router, svr *server.Server) {
 					w.WriteHeader(status)
 				}
 				data, status := svr.AddComment(r.Context(), comment)
+
+				dataJson, err := json.Marshal(data)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+
 				w.WriteHeader(status)
-				w.Write(data)
+				w.Write(dataJson)
 
 			case http.MethodDelete:
 				id, status := svr.ParseCommentID(r)
