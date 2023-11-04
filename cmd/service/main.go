@@ -25,12 +25,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var brokers = []string{
-	"127.0.0.1:9091",
-	"127.0.0.1:9092",
-	"127.0.0.1:9093",
-}
-
 func main() {
 	ctx, done := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer done()
