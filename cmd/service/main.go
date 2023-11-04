@@ -6,20 +6,23 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go/config"
 	hwservice "gitlab.ozon.dev/kavkazov/homework-8/internal/hw_service"
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/db"
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/repository/postgresql"
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/server"
-	pb "gitlab.ozon.dev/kavkazov/homework-8/pkg/hw_service"
+	hw_service "gitlab.ozon.dev/kavkazov/homework-8/pkg/hw_service"
 	"gitlab.ozon.dev/kavkazov/homework-8/pkg/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var brokers = []string{
@@ -39,7 +42,14 @@ func main() {
 	go func() {
 		if err := run(ctx, addr); err != nil {
 			errCh <- err
-			close(errCh)
+
+		}
+	}()
+
+	go func() {
+		if err := runHttp(ctx, addr); err != nil {
+			errCh <- err
+
 		}
 	}()
 
@@ -54,6 +64,21 @@ func main() {
 
 		done()
 	}
+
+}
+
+func runHttp(ctx context.Context, addr string) error {
+
+	m := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	err := hw_service.RegisterHomeworkServiceHandlerFromEndpoint(ctx, m, fmt.Sprintf("localhost%s", addr), opts)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	log.Println("grpc server listening on :\"9000\"")
+	return http.ListenAndServe(":9000", m)
 
 }
 
@@ -99,14 +124,14 @@ func run(ctx context.Context, addr string) error {
 		postgresql.NewComments(database),
 	)
 
-	pb.RegisterHomeworkServiceServer(srv, hwservice.New(impl))
+	hw_service.RegisterHomeworkServiceServer(srv, hwservice.New(impl))
 
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err
 	}
 
-	logger.Infof(ctx, "homework service listening on %q", addr)
+	logger.Infof(ctx, "grpc server listening on %q", addr)
 
 	return srv.Serve(lis)
 }

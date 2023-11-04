@@ -1,19 +1,50 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
 
 option go_package = "pkg/hw_service";
 
 package homework_service;
 
 service HomeworkService { 
-    rpc GetPost(PostRequestWithId) returns (PostResponseWithEntity) {}
-    rpc AddPost(PostRequestWithEntity) returns (PostResponseWithEntity) {}
-    rpc UpdatePost(PostRequestWithEntity) returns (google.protobuf.Empty) {}
-    rpc RemovePost(PostRequestWithId) returns (google.protobuf.Empty) {}
+    rpc GetPost(PostRequestWithId) returns (PostResponseWithEntity) {
+        option (google.api.http) = {
+            post: "/getPost"
+            body: "*"
+        };
+    }
+    rpc AddPost(PostRequestWithEntity) returns (PostResponseWithEntity) {
+        option (google.api.http) = {
+            post: "/addPost"
+            body: "*"
+        };
+    }
+    rpc UpdatePost(PostRequestWithEntity) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/updatePost"
+            body: "*"
+        };
+    }
+    rpc RemovePost(PostRequestWithId) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/removePost"
+            body: "*"
+        };
+    }
 
-    rpc AddComment(CommentRequestWithEntity) returns (CommentResponseWithEntity) {}
-    rpc RemoveComment(CommentRequestWithId) returns (google.protobuf.Empty) {}
+    rpc AddComment(CommentRequestWithEntity) returns (CommentResponseWithEntity) {
+        option (google.api.http) = {
+            post: "/addComment"
+            body: "*"
+        };
+    }
+    rpc RemoveComment(CommentRequestWithId) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/removeComment"
+            body: "*"
+        };
+    }
 }
 
 // [Request messages] ---
