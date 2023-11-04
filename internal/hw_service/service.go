@@ -17,7 +17,13 @@ var (
 
 type Implementation struct {
 	pb.UnimplementedHomeworkServiceServer
-	server server.Server
+	server *server.Server
+}
+
+func New(server *server.Server) *Implementation {
+	return &Implementation{
+		server: server,
+	}
 }
 
 func (i *Implementation) AddComment(ctx context.Context, comment *pb.CommentRequestWithEntity) (*pb.CommentResponseWithEntity, error) {

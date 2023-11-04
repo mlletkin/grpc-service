@@ -2,75 +2,71 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
-	"net/http"
+	"net"
+	"os"
+	"os/signal"
 
-	"github.com/IBM/sarama"
-	"gitlab.ozon.dev/kavkazov/homework-8/internal/infrastructure/kafka"
+	hwservice "gitlab.ozon.dev/kavkazov/homework-8/internal/hw_service"
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/db"
-	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/logger"
-	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/middleware"
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/repository/postgresql"
-	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/router"
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/server"
+	pb "gitlab.ozon.dev/kavkazov/homework-8/pkg/hw_service"
+	"google.golang.org/grpc"
 )
 
-const port = ":9000"
+func main() {
+	ctx, done := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer done()
 
-var brokers = []string{
-	"127.0.0.1:9091",
-	"127.0.0.1:9092",
-	"127.0.0.1:9093",
+	var addr string
+	flag.StringVar(&addr, "addr", ":50051", "address for homework_service server")
+
+	errCh := make(chan error, 1)
+	go func() {
+		if err := run(ctx, addr); err != nil {
+			errCh <- err
+			close(errCh)
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		fmt.Println()
+		log.Println("shutting down...")
+
+		done()
+	case err := <-errCh:
+		log.Println("exited with error:", err)
+
+		done()
+	}
+
 }
 
-func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+func run(ctx context.Context, addr string) error {
+	srv := grpc.NewServer()
 
 	database, err := db.NewDB(ctx)
 	if err != nil {
-		log.Fatalln(err)
-	}
-	defer database.GetPool(ctx).Close()
-
-	kafkaProducer, err := kafka.NewProducer(brokers)
-	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
-	kafkaConsumer, err := kafka.NewConsumer(brokers)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	sender := logger.NewKafkaSender(kafkaProducer, "log")
-
-	receiver := logger.NewKafkaReceiver(kafkaConsumer, map[string]logger.HandleFunc{
-		"log": func(msg *sarama.ConsumerMessage) {
-			lm := logger.LogMessage{}
-			err = json.Unmarshal(msg.Value, &lm)
-			if err != nil {
-				log.Println("Consumer error:", err)
-			}
-			fmt.Printf("[%s]   %v\n", string(msg.Key), lm)
-		},
-	})
-	err = receiver.Subcribe("log")
-	if err != nil {
-		log.Fatalln("receiver error:", err)
-	}
-
-	implementation := server.NewServer(
+	impl := server.NewServer(
 		postgresql.NewPosts(database),
 		postgresql.NewComments(database),
 	)
-	http.Handle("/", router.RootRouter(implementation, middleware.KafkaLogging(sender)))
+	defer database.GetPool(ctx).Close()
 
-	log.Println("server starts listening on port", port)
+	pb.RegisterHomeworkServiceServer(srv, hwservice.New(impl))
 
-	if err := http.ListenAndServe(port, nil); err != nil {
-		log.Fatalln(err)
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
 	}
+
+	log.Printf("homework service listening on %q", addr)
+	return srv.Serve(lis)
 }
