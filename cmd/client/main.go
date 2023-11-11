@@ -37,7 +37,7 @@ func run(ctx context.Context, addr string) error {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Println(post.GetEntity())
+	log.Println("post", post.GetEntity())
 
 	<-time.After(time.Second)
 
@@ -50,7 +50,7 @@ func run(ctx context.Context, addr string) error {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Println(comment.GetEntity())
+	log.Println("comment", comment.GetEntity())
 
 	<-time.After(time.Second)
 
@@ -58,7 +58,7 @@ func run(ctx context.Context, addr string) error {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Println(post.GetEntity())
+	log.Println("post", post.GetEntity())
 
 	<-time.After(time.Second)
 
@@ -73,7 +73,7 @@ func run(ctx context.Context, addr string) error {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Println(post.GetEntity())
+	log.Println("post", post.GetEntity())
 
 	return nil
 }

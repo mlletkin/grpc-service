@@ -1,26 +1,17 @@
 package middleware
 
 import (
-	"net/http"
+	"context"
 	"time"
 
-	"github.com/gorilla/mux"
-	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/logger"
+	"gitlab.ozon.dev/kavkazov/homework-8/pkg/logger"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
 )
 
-func KafkaLogging(sender logger.Sender) mux.MiddlewareFunc {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(
-			func(w http.ResponseWriter, r *http.Request) {
-				err := sender.SendMessage(
-					logger.LogMessage{Path: r.URL.Path, Type: r.Method, TimeStamp: time.Now()},
-				)
-				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				}
-				next.ServeHTTP(w, r)
-			},
-		)
-	}
+func KafkaLogging(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
+	l := logger.FromContext(ctx)
+	ctx = logger.ToContext(ctx, l.With(zap.String("method", info.FullMethod)))
+	logger.Infof(ctx, "%v", time.Now())
+	return handler(ctx, req)
 }

@@ -4,13 +4,10 @@ import (
 	"context"
 	"errors"
 	"log"
-	"time"
 
 	"github.com/opentracing/opentracing-go"
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/repository"
 	pb "gitlab.ozon.dev/kavkazov/homework-8/pkg/hw_service"
-	"gitlab.ozon.dev/kavkazov/homework-8/pkg/logger"
-	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -36,9 +33,9 @@ func (i *Implementation) AddComment(ctx context.Context, req *pb.CommentRequestW
 	span, ctx := opentracing.StartSpanFromContext(ctx, "homework_service: AddComment")
 	defer span.Finish()
 
-	l := logger.FromContext(ctx)
-	ctx = logger.ToContext(ctx, l.With(zap.String("method", "AddComment")))
-	logger.Infof(ctx, "%v", time.Now())
+	// l := logger.FromContext(ctx)
+	// ctx = logger.ToContext(ctx, l.With(zap.String("method", "AddComment")))
+	// logger.Infof(ctx, "%v", time.Now())
 
 	entity := req.GetEntity()
 	post_id := req.GetPostId()
@@ -71,9 +68,9 @@ func (i *Implementation) AddPost(ctx context.Context, req *pb.PostRequestWithEnt
 	span, ctx := opentracing.StartSpanFromContext(ctx, "homework_service: AddPost")
 	defer span.Finish()
 
-	l := logger.FromContext(ctx)
-	ctx = logger.ToContext(ctx, l.With(zap.String("method", "AddPost")))
-	logger.Infof(ctx, "%v", time.Now())
+	// l := logger.FromContext(ctx)
+	// ctx = logger.ToContext(ctx, l.With(zap.String("method", "AddPost")))
+	// logger.Infof(ctx, "%v", time.Now())
 
 	coreSpan, ctx := opentracing.StartSpanFromContext(ctx, "core: AddPost")
 
@@ -117,9 +114,9 @@ func (i *Implementation) GetPost(ctx context.Context, id *pb.PostRequestWithId) 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "homework_service: GetPost")
 	defer span.Finish()
 
-	l := logger.FromContext(ctx)
-	ctx = logger.ToContext(ctx, l.With(zap.String("method", "GetPost")))
-	logger.Infof(ctx, "%v", time.Now())
+	// l := logger.FromContext(ctx)
+	// ctx = logger.ToContext(ctx, l.With(zap.String("method", "GetPost")))
+	// logger.Infof(ctx, "%v", time.Now())
 
 	coreSpan, ctx := opentracing.StartSpanFromContext(ctx, "core: GetPost")
 
@@ -163,9 +160,9 @@ func (i *Implementation) RemoveComment(ctx context.Context, id *pb.CommentReques
 	span, ctx := opentracing.StartSpanFromContext(ctx, "homework_service: RemoveComment")
 	defer span.Finish()
 
-	l := logger.FromContext(ctx)
-	ctx = logger.ToContext(ctx, l.With(zap.String("method", "RemoveComment")))
-	logger.Infof(ctx, "%v", time.Now())
+	// l := logger.FromContext(ctx)
+	// ctx = logger.ToContext(ctx, l.With(zap.String("method", "RemoveComment")))
+	// logger.Infof(ctx, "%v", time.Now())
 
 	coreSpan, ctx := opentracing.StartSpanFromContext(ctx, "core: RemoveComment")
 
@@ -186,9 +183,9 @@ func (i *Implementation) RemovePost(ctx context.Context, id *pb.PostRequestWithI
 	span, ctx := opentracing.StartSpanFromContext(ctx, "homework_service: RemovePost")
 	defer span.Finish()
 
-	l := logger.FromContext(ctx)
-	ctx = logger.ToContext(ctx, l.With(zap.String("method", "RemovePost")))
-	logger.Infof(ctx, "%v", time.Now())
+	// l := logger.FromContext(ctx)
+	// ctx = logger.ToContext(ctx, l.With(zap.String("method", "RemovePost")))
+	// logger.Infof(ctx, "%v", time.Now())
 
 	coreSpan, ctx := opentracing.StartSpanFromContext(ctx, "core: RemovePost")
 
@@ -209,9 +206,9 @@ func (i *Implementation) UpdatePost(ctx context.Context, req *pb.PostRequestWith
 	span, ctx := opentracing.StartSpanFromContext(ctx, "homework_service: UpdatePost")
 	defer span.Finish()
 
-	l := logger.FromContext(ctx)
-	ctx = logger.ToContext(ctx, l.With(zap.String("method", "UpdatePost")))
-	logger.Infof(ctx, "%v", time.Now())
+	// l := logger.FromContext(ctx)
+	// ctx = logger.ToContext(ctx, l.With(zap.String("method", "UpdatePost")))
+	// logger.Infof(ctx, "%v", time.Now())
 
 	entity := req.GetEntity()
 

@@ -9,8 +9,8 @@ import (
 
 type Producer struct {
 	brokers []string
-	sync    sarama.SyncProducer
-	async   sarama.AsyncProducer
+	Sync    sarama.SyncProducer
+	Async   sarama.AsyncProducer
 }
 
 func newSync(brokers []string) (sarama.SyncProducer, error) {
@@ -80,20 +80,20 @@ func NewProducer(brokers []string) (*Producer, error) {
 
 	producer := &Producer{
 		brokers: brokers,
-		sync:    syncProducer,
-		async:   asyncProducer,
+		Sync:    syncProducer,
+		Async:   asyncProducer,
 	}
 
 	return producer, nil
 }
 
 func (k *Producer) Close() error {
-	err := k.sync.Close()
+	err := k.Sync.Close()
 	if err != nil {
 		return errors.Wrap(err, "kafka.Connector.Close")
 	}
 
-	err = k.sync.Close()
+	err = k.Sync.Close()
 	if err != nil {
 		return errors.Wrap(err, "kafka.Connector.Close")
 	}
@@ -104,9 +104,9 @@ func (k *Producer) Close() error {
 func (k *Producer) SendSyncMessage(
 	message *sarama.ProducerMessage,
 ) (partition int32, offset int64, err error) {
-	return k.sync.SendMessage(message)
+	return k.Sync.SendMessage(message)
 }
 
 func (k *Producer) SendAsyncMessage(message *sarama.ProducerMessage) {
-	k.async.Input() <- message
+	k.Async.Input() <- message
 }
