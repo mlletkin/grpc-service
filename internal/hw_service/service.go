@@ -68,10 +68,6 @@ func (i *Implementation) AddPost(ctx context.Context, req *pb.PostRequestWithEnt
 	span, ctx := opentracing.StartSpanFromContext(ctx, "homework_service: AddPost")
 	defer span.Finish()
 
-	// l := logger.FromContext(ctx)
-	// ctx = logger.ToContext(ctx, l.With(zap.String("method", "AddPost")))
-	// logger.Infof(ctx, "%v", time.Now())
-
 	coreSpan, ctx := opentracing.StartSpanFromContext(ctx, "core: AddPost")
 
 	post := &repository.Post{
@@ -91,7 +87,7 @@ func (i *Implementation) AddPost(ctx context.Context, req *pb.PostRequestWithEnt
 
 	coreSpan.Finish()
 
-	comms := mapper(post.Comments, func(comment repository.Comment) *pb.Comment {
+	comms := Mapper(post.Comments, func(comment repository.Comment) *pb.Comment {
 		return &pb.Comment{
 			Id:         uint64(comment.ID),
 			Text:       comment.Text,
@@ -114,10 +110,6 @@ func (i *Implementation) GetPost(ctx context.Context, id *pb.PostRequestWithId) 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "homework_service: GetPost")
 	defer span.Finish()
 
-	// l := logger.FromContext(ctx)
-	// ctx = logger.ToContext(ctx, l.With(zap.String("method", "GetPost")))
-	// logger.Infof(ctx, "%v", time.Now())
-
 	coreSpan, ctx := opentracing.StartSpanFromContext(ctx, "core: GetPost")
 
 	post, err := i.postRepo.GetByID(ctx, int64(id.GetId()))
@@ -136,7 +128,7 @@ func (i *Implementation) GetPost(ctx context.Context, id *pb.PostRequestWithId) 
 	post.Comments = comments
 	coreSpan.Finish()
 
-	comms := mapper(post.Comments, func(comment repository.Comment) *pb.Comment {
+	comms := Mapper(post.Comments, func(comment repository.Comment) *pb.Comment {
 		return &pb.Comment{
 			Id:         uint64(comment.ID),
 			Text:       comment.Text,
@@ -160,10 +152,6 @@ func (i *Implementation) RemoveComment(ctx context.Context, id *pb.CommentReques
 	span, ctx := opentracing.StartSpanFromContext(ctx, "homework_service: RemoveComment")
 	defer span.Finish()
 
-	// l := logger.FromContext(ctx)
-	// ctx = logger.ToContext(ctx, l.With(zap.String("method", "RemoveComment")))
-	// logger.Infof(ctx, "%v", time.Now())
-
 	coreSpan, ctx := opentracing.StartSpanFromContext(ctx, "core: RemoveComment")
 
 	err := i.commentRepo.Remove(ctx, int64(id.GetId()))
@@ -183,10 +171,6 @@ func (i *Implementation) RemovePost(ctx context.Context, id *pb.PostRequestWithI
 	span, ctx := opentracing.StartSpanFromContext(ctx, "homework_service: RemovePost")
 	defer span.Finish()
 
-	// l := logger.FromContext(ctx)
-	// ctx = logger.ToContext(ctx, l.With(zap.String("method", "RemovePost")))
-	// logger.Infof(ctx, "%v", time.Now())
-
 	coreSpan, ctx := opentracing.StartSpanFromContext(ctx, "core: RemovePost")
 
 	err := i.postRepo.Remove(ctx, int64(id.GetId()))
@@ -205,10 +189,6 @@ func (i *Implementation) RemovePost(ctx context.Context, id *pb.PostRequestWithI
 func (i *Implementation) UpdatePost(ctx context.Context, req *pb.PostRequestWithEntity) (*emptypb.Empty, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "homework_service: UpdatePost")
 	defer span.Finish()
-
-	// l := logger.FromContext(ctx)
-	// ctx = logger.ToContext(ctx, l.With(zap.String("method", "UpdatePost")))
-	// logger.Infof(ctx, "%v", time.Now())
 
 	entity := req.GetEntity()
 
