@@ -3,12 +3,11 @@ package hwservice
 import (
 	"context"
 	"errors"
-	"net/http"
+	"log"
 	"time"
 
 	"github.com/opentracing/opentracing-go"
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/repository"
-	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/server"
 	pb "gitlab.ozon.dev/kavkazov/homework-8/pkg/hw_service"
 	"gitlab.ozon.dev/kavkazov/homework-8/pkg/logger"
 	"go.uber.org/zap"
@@ -16,21 +15,24 @@ import (
 )
 
 var (
-	ErrServer = errors.New("server error")
+	ErrServer   = errors.New("server error")
+	ErrNotFound = errors.New("not found")
 )
 
 type Implementation struct {
 	pb.UnimplementedHomeworkServiceServer
-	server *server.Server
+	postRepo    repository.PostsRepo
+	commentRepo repository.CommentsRepo
 }
 
-func New(server *server.Server) *Implementation {
+func New(post repository.PostsRepo, comment repository.CommentsRepo) *Implementation {
 	return &Implementation{
-		server: server,
+		postRepo:    post,
+		commentRepo: comment,
 	}
 }
 
-func (i *Implementation) AddComment(ctx context.Context, comment *pb.CommentRequestWithEntity) (*pb.CommentResponseWithEntity, error) {
+func (i *Implementation) AddComment(ctx context.Context, req *pb.CommentRequestWithEntity) (*pb.CommentResponseWithEntity, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "homework_service: AddComment")
 	defer span.Finish()
 
@@ -38,31 +40,34 @@ func (i *Implementation) AddComment(ctx context.Context, comment *pb.CommentRequ
 	ctx = logger.ToContext(ctx, l.With(zap.String("method", "AddComment")))
 	logger.Infof(ctx, "%v", time.Now())
 
-	entity := comment.GetEntity()
-	post_id := comment.GetPostId()
+	entity := req.GetEntity()
+	post_id := req.GetPostId()
 
 	coreSpan, ctx := opentracing.StartSpanFromContext(ctx, "core: AddComment")
-	data, status := i.server.AddComment(ctx, &repository.Comment{
+
+	comment := &repository.Comment{
 		Text:       entity.GetText(),
 		PostID:     int64(post_id),
 		LikesCount: int(entity.GetLikesCount()),
-	})
-	coreSpan.Finish()
-
-	if status != http.StatusOK {
+	}
+	id, err := i.commentRepo.Add(ctx, comment)
+	if err != nil {
 		return nil, ErrServer
 	}
+	comment.ID = id
+
+	coreSpan.Finish()
 
 	return &pb.CommentResponseWithEntity{
 		Entity: &pb.Comment{
-			Id:         uint64(data.ID),
-			Text:       data.Text,
-			LikesCount: uint64(data.LikesCount),
+			Id:         uint64(comment.ID),
+			Text:       comment.Text,
+			LikesCount: uint64(comment.LikesCount),
 		},
 	}, nil
 }
 
-func (i *Implementation) AddPost(ctx context.Context, post *pb.PostRequestWithEntity) (*pb.PostResponseWithEntity, error) {
+func (i *Implementation) AddPost(ctx context.Context, req *pb.PostRequestWithEntity) (*pb.PostResponseWithEntity, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "homework_service: AddPost")
 	defer span.Finish()
 
@@ -71,17 +76,25 @@ func (i *Implementation) AddPost(ctx context.Context, post *pb.PostRequestWithEn
 	logger.Infof(ctx, "%v", time.Now())
 
 	coreSpan, ctx := opentracing.StartSpanFromContext(ctx, "core: AddPost")
-	data, status := i.server.AddPost(ctx, &server.AddPostRequest{
-		Heading: post.GetEntity().GetHeading(),
-		Text:    post.GetEntity().GetText(),
-	})
+
+	post := &repository.Post{
+		Heading: req.GetEntity().GetHeading(),
+		Text:    req.Entity.GetText(),
+	}
+	id, err := i.postRepo.Add(ctx, post)
+	if err != nil {
+		if errors.Is(err, repository.ErrZeroRows) {
+			return nil, ErrNotFound
+		} else {
+			return nil, ErrServer
+
+		}
+	}
+	post.ID = id
+
 	coreSpan.Finish()
 
-	if status != http.StatusOK {
-		return nil, ErrServer
-	}
-
-	comms := mapper(data.Comments, func(comment repository.Comment) *pb.Comment {
+	comms := mapper(post.Comments, func(comment repository.Comment) *pb.Comment {
 		return &pb.Comment{
 			Id:         uint64(comment.ID),
 			Text:       comment.Text,
@@ -91,10 +104,10 @@ func (i *Implementation) AddPost(ctx context.Context, post *pb.PostRequestWithEn
 
 	return &pb.PostResponseWithEntity{
 		Entity: &pb.Post{
-			Id:         uint64(data.ID),
-			Heading:    data.Heading,
-			Text:       data.Text,
-			LikesCount: uint64(data.LikesCount),
+			Id:         uint64(post.ID),
+			Heading:    post.Heading,
+			Text:       post.Text,
+			LikesCount: uint64(post.LikesCount),
 			Comments:   comms,
 		},
 	}, nil
@@ -109,14 +122,24 @@ func (i *Implementation) GetPost(ctx context.Context, id *pb.PostRequestWithId) 
 	logger.Infof(ctx, "%v", time.Now())
 
 	coreSpan, ctx := opentracing.StartSpanFromContext(ctx, "core: GetPost")
-	data, status := i.server.GetPost(ctx, int64(id.GetId()))
-	coreSpan.Finish()
 
-	if status != http.StatusOK {
+	post, err := i.postRepo.GetByID(ctx, int64(id.GetId()))
+	if err != nil {
+		if errors.Is(err, repository.ErrZeroRows) {
+			return nil, ErrNotFound
+		}
 		return nil, ErrServer
 	}
 
-	comms := mapper(data.Comments, func(comment repository.Comment) *pb.Comment {
+	comments, err := i.commentRepo.GetMany(ctx, int64(id.GetId()))
+	if err != nil {
+		log.Println(err)
+		comments = nil
+	}
+	post.Comments = comments
+	coreSpan.Finish()
+
+	comms := mapper(post.Comments, func(comment repository.Comment) *pb.Comment {
 		return &pb.Comment{
 			Id:         uint64(comment.ID),
 			Text:       comment.Text,
@@ -126,10 +149,10 @@ func (i *Implementation) GetPost(ctx context.Context, id *pb.PostRequestWithId) 
 
 	return &pb.PostResponseWithEntity{
 		Entity: &pb.Post{
-			Id:         uint64(data.ID),
-			Text:       data.Text,
-			Heading:    data.Heading,
-			LikesCount: uint64(data.LikesCount),
+			Id:         uint64(post.ID),
+			Text:       post.Text,
+			Heading:    post.Heading,
+			LikesCount: uint64(post.LikesCount),
 			Comments:   comms,
 		},
 	}, nil
@@ -145,12 +168,16 @@ func (i *Implementation) RemoveComment(ctx context.Context, id *pb.CommentReques
 	logger.Infof(ctx, "%v", time.Now())
 
 	coreSpan, ctx := opentracing.StartSpanFromContext(ctx, "core: RemoveComment")
-	status := i.server.RemoveComment(ctx, int64(id.GetId()))
-	coreSpan.Finish()
 
-	if status != http.StatusOK {
-		return nil, ErrServer
+	err := i.commentRepo.Remove(ctx, int64(id.GetId()))
+	if err != nil {
+		if errors.Is(err, repository.ErrZeroRows) {
+			return nil, ErrNotFound
+		} else {
+			return nil, ErrServer
+		}
 	}
+	coreSpan.Finish()
 
 	return &emptypb.Empty{}, nil
 }
@@ -164,16 +191,21 @@ func (i *Implementation) RemovePost(ctx context.Context, id *pb.PostRequestWithI
 	logger.Infof(ctx, "%v", time.Now())
 
 	coreSpan, ctx := opentracing.StartSpanFromContext(ctx, "core: RemovePost")
-	status := i.server.RemovePost(ctx, int64(id.GetId()))
+
+	err := i.postRepo.Remove(ctx, int64(id.GetId()))
+	if err != nil {
+		if errors.Is(err, repository.ErrZeroRows) {
+			return nil, ErrNotFound
+		} else {
+			return nil, ErrServer
+		}
+	}
 	coreSpan.Finish()
 
-	if status != http.StatusOK {
-		return nil, ErrServer
-	}
 	return &emptypb.Empty{}, nil
 }
 
-func (i *Implementation) UpdatePost(ctx context.Context, post *pb.PostRequestWithEntity) (*emptypb.Empty, error) {
+func (i *Implementation) UpdatePost(ctx context.Context, req *pb.PostRequestWithEntity) (*emptypb.Empty, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "homework_service: UpdatePost")
 	defer span.Finish()
 
@@ -181,20 +213,21 @@ func (i *Implementation) UpdatePost(ctx context.Context, post *pb.PostRequestWit
 	ctx = logger.ToContext(ctx, l.With(zap.String("method", "UpdatePost")))
 	logger.Infof(ctx, "%v", time.Now())
 
-	entity := post.GetEntity()
+	entity := req.GetEntity()
 
 	coreSpan, ctx := opentracing.StartSpanFromContext(ctx, "core: UpdatePost")
-	status := i.server.UpdatePost(ctx, &server.UpdatePostRequest{
-		ID: int64(entity.GetId()),
-		AddPostRequest: server.AddPostRequest{
-			Heading: entity.GetHeading(),
-			Text:    entity.GetText(),
-		},
-	})
+
+	if err := i.postRepo.Update(
+		ctx,
+		&repository.Post{Heading: entity.Heading, Text: entity.Text, ID: int64(entity.Id)},
+	); err != nil {
+		if errors.Is(err, repository.ErrZeroRows) {
+			return nil, ErrNotFound
+		} else {
+			return nil, ErrServer
+		}
+	}
 	coreSpan.Finish()
 
-	if status != http.StatusOK {
-		return nil, ErrServer
-	}
 	return &emptypb.Empty{}, nil
 }

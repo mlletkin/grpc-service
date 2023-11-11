@@ -16,7 +16,6 @@ import (
 	hwservice "gitlab.ozon.dev/kavkazov/homework-8/internal/hw_service"
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/db"
 	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/repository/postgresql"
-	"gitlab.ozon.dev/kavkazov/homework-8/internal/pkg/server"
 	hw_service "gitlab.ozon.dev/kavkazov/homework-8/pkg/hw_service"
 	"gitlab.ozon.dev/kavkazov/homework-8/pkg/logger"
 	"go.uber.org/zap"
@@ -111,12 +110,8 @@ func run(ctx context.Context, addr string) error {
 	}
 	defer database.GetPool(ctx).Close()
 
-	impl := server.NewServer(
-		postgresql.NewPosts(database),
-		postgresql.NewComments(database),
-	)
-
-	hw_service.RegisterHomeworkServiceServer(srv, hwservice.New(impl))
+	hw_service.RegisterHomeworkServiceServer(srv, hwservice.New(postgresql.NewPosts(database),
+		postgresql.NewComments(database)))
 
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
