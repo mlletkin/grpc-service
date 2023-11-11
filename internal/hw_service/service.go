@@ -33,10 +33,6 @@ func (i *Implementation) AddComment(ctx context.Context, req *pb.CommentRequestW
 	span, ctx := opentracing.StartSpanFromContext(ctx, "homework_service: AddComment")
 	defer span.Finish()
 
-	// l := logger.FromContext(ctx)
-	// ctx = logger.ToContext(ctx, l.With(zap.String("method", "AddComment")))
-	// logger.Infof(ctx, "%v", time.Now())
-
 	entity := req.GetEntity()
 	post_id := req.GetPostId()
 
