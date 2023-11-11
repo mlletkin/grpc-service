@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -29,6 +28,14 @@ func main() {
 	ctx, done := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer done()
 
+	zapLogger, err := zap.NewProduction()
+	if err != nil {
+		panic(err)
+	}
+	logger.SetGlobal(
+		zapLogger.With(zap.String("component", "homework_service")),
+	)
+
 	var addr string
 	flag.StringVar(&addr, "addr", ":50051", "address for homework_service server")
 
@@ -49,13 +56,10 @@ func main() {
 
 	select {
 	case <-ctx.Done():
-		fmt.Println()
-		log.Println("shutting down...")
-
+		logger.Infof(ctx, "shutting down...")
 		done()
 	case err := <-errCh:
-		log.Println("exited with error:", err)
-
+		logger.Infof(ctx, "exited with error:", err)
 		done()
 	}
 
@@ -68,23 +72,17 @@ func runHttp(ctx context.Context, addr string) error {
 	err := hw_service.RegisterHomeworkServiceHandlerFromEndpoint(ctx, m, fmt.Sprintf("localhost%s", addr), opts)
 
 	if err != nil {
-		log.Fatalln(err)
+		logger.Errorf(ctx, "%v", err)
+
 	}
 
-	log.Println("grpc server listening on :\"9000\"")
+	logger.Infof(ctx, "grpc server listening on :\"9000\"")
+
 	return http.ListenAndServe(":9000", m)
 
 }
 
 func run(ctx context.Context, addr string) error {
-
-	zapLogger, err := zap.NewProduction()
-	if err != nil {
-		return err
-	}
-	logger.SetGlobal(
-		zapLogger.With(zap.String("component", "homework_service")),
-	)
 
 	jaegerCfg := config.Configuration{
 		Sampler: &config.SamplerConfig{
